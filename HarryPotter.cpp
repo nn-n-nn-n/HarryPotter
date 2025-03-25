@@ -3,38 +3,11 @@
 #include <algorithm> // эта библиотека нужна для функции transform
 #include <fstream>
 #include <set>
-//#include <string>
 
 using namespace std;
 
-vector<vector<string>> SentencesParser(const string& text)	// основная функция парсинга
-{
-	vector<vector<string>> result;
-	vector<string> words;
-	size_t pos = FindPunctionMark(text);
-	size_t pos1 = string::npos;
-	size_t startPos = 0;
-	string sentence;
-	while (pos != string::npos)
-	{
-		sentence = text.substr(startPos, pos - pos1);
-		if (IsLetter(sentence))
-		{
-			words = DivisionWords(sentence);
-			result.push_back(words);
-		}
-		startPos = pos;
-		pos = FindPunctionMark(text);
-		if (pos != string::npos)
-			sentence.erase(pos, 1);
-	}
-
-	return result;
-}
-
 
 bool IsLetter(const string& l)	// функция проверки является ли символ буквой
-								// для латинских букв можно использовать isalpha()
 {
 	if ((l >= "A" && l <= "Z") || (l >= "a" && l <= "z")
 		|| (l >= "А" && l <= "Я")
@@ -61,42 +34,67 @@ vector<string> DivisionWords(const string& sentence)	// функция разд�
 {
 	vector<string> res;
 	string word;
-	size_t pos = 0;
-	size_t pos1 = string::npos;
+	size_t pos = sentence.find(' ');
 	size_t startPos = 0;
 	if (!sentence.empty())
 	{
-		pos = sentence.find(' ', pos);
-		if (pos != string::npos)
+		while (pos != string::npos)
 		{
-			word = sentence.substr(startPos, pos - pos1);	// получаем первое число
-			res.push_back(word);
-		}
-		while (pos != string::npos)		// цикл для получения остальных чисел в векторе
-		{
-			pos = sentence.find(' ', pos);
-			if (pos != string::npos)
-			{
-				word = sentence.substr(pos + 1, pos - pos1);
+			word = sentence.substr(startPos, pos - startPos);
+			if (word.length() > 0)
 				res.push_back(word);
-				pos1 = pos;
-				pos++;
-			}
-			else
-				break;	// выход из цикла, когда вектор достиг конца
+			startPos = pos + 1;
+			pos = sentence.find(' ', pos + 1);
 		}
+		word = sentence.substr(startPos, sentence.length() - startPos);
+		if (word.length() > 0)
+			res.push_back(word);
 	}
 	return res;
+}
+
+vector<vector<string>> SentencesParser(const string& text)	// основная функция парсинга
+{
+	vector<vector<string>> result;
+	vector<string> words;
+	size_t pos = FindPunctionMark(text);
+	size_t pos1 = string::npos;
+	size_t startPos = 0;
+	string sentence;
+	while (pos != string::npos)
+	{
+		sentence = text.substr(startPos, pos - pos1);
+		if (IsLetter(sentence))
+		{
+			words = DivisionWords(sentence);
+			result.push_back(words);
+		}
+		startPos = pos;
+		pos = FindPunctionMark(text);
+		if (pos != string::npos)
+			sentence.erase(pos, 1);
+	}
+
+	return result;
+}
+
+void Print(const vector<vector<string>>& vvs)	// функция печати предложений в консоль
+{
+	for (int i = 0; i < vvs.size(); i++)	// auto i : vvs			 VS пишет, что не может прочитать i
+	{
+		cout << i << " предложение:" << endl;		// вот здесь		(VS пишет, что не может прочитать i)
+		for (int j = 0; j < vvs[i].size(); j++)		// auto j : i
+			cout << vvs[i][j] << endl;
+	}
 }
 
 int main()
 {
 	ifstream txt{ "HarryPotterText.txt" };
-	string source;
-	while (txt)
-	{
-		txt >> source;
-	}
+	string source, str;
+	while (txt >> str)
+		source += str + ' ';
+	txt.close();
 	transform(source.begin(), source.end(), source.begin(), tolower);	// перевод строки в нижний регистр
-	SentencesParser(source);
+	Print(SentencesParser(source));
 }
