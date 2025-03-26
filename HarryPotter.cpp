@@ -19,14 +19,11 @@ bool IsLetter(const string& l)	// функция проверки являетс
 	return false;
 }
 
-size_t FindPunctionMark(const string& text, size_t startPos = 0)	// функция поиска конца предложения
+size_t FindPunctionMark(const string& text, const set<char>& delimiters, size_t startPos = 0)	// функция поиска конца предложения
 {
-	set<char> delimiters{'.','!','?',';',':','(',')'};
 	for (size_t i = startPos; i < text.length(); i++)
-	{
 		if (delimiters.count(text[i]) > 0)
 			return i;
-	}
 	return string::npos;
 }
 
@@ -57,7 +54,8 @@ vector<vector<string>> SentencesParser(const string& text)	// основная �
 {
 	vector<vector<string>> result;
 	vector<string> words;
-	size_t pos = FindPunctionMark(text);
+	set<char> delimiters{ '.','!','?',';',':','(',')' };
+	size_t pos = FindPunctionMark(text, delimiters);
 	size_t pos1 = string::npos;
 	size_t startPos = 0;
 	string sentence;
@@ -70,7 +68,7 @@ vector<vector<string>> SentencesParser(const string& text)	// основная �
 			result.push_back(words);
 		}
 		startPos = pos;
-		pos = FindPunctionMark(text);
+		pos = FindPunctionMark(text, delimiters, pos);
 		if (pos != string::npos)
 			sentence.erase(pos, 1);
 	}
